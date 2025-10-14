@@ -1,6 +1,6 @@
-package com.hexter31376.umc_mission4.domain.book.entity;
+package com.hexter31376.umc_mission4.domain.order.entity;
 
-import com.hexter31376.umc_mission4.domain.order.entity.OrderItem;
+import com.hexter31376.umc_mission4.domain.member.entity.Member;
 import com.hexter31376.umc_mission4.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,26 +13,19 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Getter
-@Table(name = "book_items")
-public class BookItem extends BaseEntity {
+@Table(name = "orders")
+public class Order extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 32)
-    private String isbn;
-
-    @Column(nullable = false, name = "price")
-    private Long price;
-
-    @Builder.Default
     @Column(nullable = false)
-    private Integer quantity = 0;
+    private Long totalPrice;
 
-    @JoinColumn(name = "book_id", nullable = false)
+    @JoinColumn(name = "member_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    private Book book;
+    private Member member;
 
     @Builder.Default
-    @OneToMany(mappedBy = "bookItem", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems = new ArrayList<>();
 }

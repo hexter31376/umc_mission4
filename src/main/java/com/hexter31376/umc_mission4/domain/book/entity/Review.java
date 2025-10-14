@@ -1,38 +1,31 @@
 package com.hexter31376.umc_mission4.domain.book.entity;
 
-import com.hexter31376.umc_mission4.domain.order.entity.OrderItem;
+import com.hexter31376.umc_mission4.domain.member.entity.Member;
 import com.hexter31376.umc_mission4.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Getter
-@Table(name = "book_items")
-public class BookItem extends BaseEntity {
+@Table(name = "reviews")
+public class Review extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 32)
-    private String isbn;
-
-    @Column(nullable = false, name = "price")
-    private Long price;
-
-    @Builder.Default
     @Column(nullable = false)
-    private Integer quantity = 0;
+    private Integer rating;
+
+    @Column(nullable = false, length = 1000)
+    private String content;
 
     @JoinColumn(name = "book_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Book book;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "bookItem", fetch = FetchType.LAZY)
-    private List<OrderItem> orderItems = new ArrayList<>();
+    @JoinColumn(name = "member_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    private Member member; //
 }
