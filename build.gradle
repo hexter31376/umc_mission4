@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.6'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.github.ben-manes.versions' version '0.48.0'
 }
 
 group = 'com.hexter31376'
@@ -32,6 +33,27 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Use Jakarta Persistence API for Spring Boot 3 (jakarta.persistence)
+    compileOnly 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+    annotationProcessor 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+
+    // QueryDSL
+    // QueryDSL version (stable fallback)
+    def querydslVersion = "5.1.0"
+    // Use jakarta classifier for jakarta.persistence-compatible QueryDSL artifact
+    implementation "com.querydsl:querydsl-jpa:${querydslVersion}:jakarta"
+    // Use 'jakarta' classifier so the annotation processor targets jakarta.persistence types
+    annotationProcessor "com.querydsl:querydsl-apt:${querydslVersion}:jakarta"
+}
+
+// Add generated sources directory so IDE/compile can see QueryDSL Q-types
+sourceSets {
+    main {
+        java {
+            srcDir("$buildDir/generated/sources/annotationProcessor/java/main")
+        }
+    }
 }
 
 tasks.named('test') {
