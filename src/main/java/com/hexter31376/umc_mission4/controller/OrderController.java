@@ -2,6 +2,8 @@ package com.hexter31376.umc_mission4.controller;
 
 import com.hexter31376.umc_mission4.dto.order.OrderCreateDto;
 import com.hexter31376.umc_mission4.dto.order.OrderResponseDto;
+import com.hexter31376.umc_mission4.global.apiPayload.ApiSuccessResponse;
+import com.hexter31376.umc_mission4.global.apiPayload.code.GeneralSuccessCode;
 import com.hexter31376.umc_mission4.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +19,16 @@ public class OrderController {
     }
 
     @PostMapping("/direct")
-    public ResponseEntity<OrderResponseDto> orderDirect(@Valid @RequestBody OrderCreateDto dto) {
-        return ResponseEntity.ok(orderService.orderDirect(dto));
+    public ResponseEntity<ApiSuccessResponse<OrderResponseDto>> orderDirect(@Valid @RequestBody OrderCreateDto dto) {
+        OrderResponseDto created = orderService.orderDirect(dto);
+        ApiSuccessResponse<OrderResponseDto> payload = new ApiSuccessResponse<>(GeneralSuccessCode.CREATED.getCode(), GeneralSuccessCode.CREATED.getMessage(), created);
+        return ResponseEntity.status(GeneralSuccessCode.CREATED.getStatus()).body(payload);
     }
 
     @PostMapping("/from-cart")
-    public ResponseEntity<OrderResponseDto> orderFromCart(@Valid @RequestBody OrderCreateDto dto) {
-        return ResponseEntity.ok(orderService.orderFromCart(dto));
+    public ResponseEntity<ApiSuccessResponse<OrderResponseDto>> orderFromCart(@Valid @RequestBody OrderCreateDto dto) {
+        OrderResponseDto created = orderService.orderFromCart(dto);
+        ApiSuccessResponse<OrderResponseDto> payload = new ApiSuccessResponse<>(GeneralSuccessCode.CREATED.getCode(), GeneralSuccessCode.CREATED.getMessage(), created);
+        return ResponseEntity.status(GeneralSuccessCode.CREATED.getStatus()).body(payload);
     }
 }

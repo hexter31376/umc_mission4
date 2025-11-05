@@ -4,9 +4,12 @@ import com.hexter31376.umc_mission4.global.apiPayload.ApiErrorResponse;
 import com.hexter31376.umc_mission4.global.apiPayload.code.GeneralErrorCode;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -19,8 +22,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        if (message.isEmpty()) message = "validation failed";
         return ResponseEntity.status(GeneralErrorCode.BAD_REQUEST.getStatus())
-                .body(new ApiErrorResponse(GeneralErrorCode.BAD_REQUEST.getCode(), "validation failed"));
+                .body(new ApiErrorResponse(GeneralErrorCode.BAD_REQUEST.getCode(), message));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
@@ -35,4 +42,3 @@ public class GlobalExceptionHandler {
                 .body(new ApiErrorResponse(GeneralErrorCode.INTERNAL_ERROR.getCode(), ex.getMessage()));
     }
 }
-
