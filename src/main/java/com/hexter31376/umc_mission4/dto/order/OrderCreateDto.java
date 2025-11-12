@@ -2,7 +2,7 @@ package com.hexter31376.umc_mission4.dto.order;
 
 import lombok.*;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import java.util.List;
 
 @Getter
@@ -21,6 +21,6 @@ public class OrderCreateDto {
     // optional: direct order of a bookItem
     private Long bookItemId;
 
+    @Min(1)
     private Integer quantity;
 }
-

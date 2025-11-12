@@ -11,9 +11,11 @@ import com.hexter31376.umc_mission4.repository.member.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 @Service
 @Transactional
+@Validated
 public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final BookRepository bookRepository;

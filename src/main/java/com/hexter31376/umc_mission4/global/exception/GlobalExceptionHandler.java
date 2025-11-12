@@ -3,10 +3,12 @@ package com.hexter31376.umc_mission4.global.exception;
 import com.hexter31376.umc_mission4.global.apiPayload.ApiErrorResponse;
 import com.hexter31376.umc_mission4.global.apiPayload.code.GeneralErrorCode;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.validation.BindException;
 
 import java.util.stream.Collectors;
 
@@ -25,6 +27,26 @@ public class GlobalExceptionHandler {
                 .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
                 .collect(Collectors.joining(", "));
         if (message.isEmpty()) message = "validation failed";
+        return ResponseEntity.status(GeneralErrorCode.BAD_REQUEST.getStatus())
+                .body(new ApiErrorResponse(GeneralErrorCode.BAD_REQUEST.getCode(), message));
+    }
+
+    @ExceptionHandler(BindException.class)
+    public ResponseEntity<ApiErrorResponse> handleBind(BindException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        if (message.isEmpty()) message = "bind validation failed";
+        return ResponseEntity.status(GeneralErrorCode.BAD_REQUEST.getStatus())
+                .body(new ApiErrorResponse(GeneralErrorCode.BAD_REQUEST.getCode(), message));
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
+        String message = ex.getConstraintViolations().stream()
+                .map(cv -> cv.getPropertyPath() + ": " + cv.getMessage())
+                .collect(Collectors.joining(", "));
+        if (message.isEmpty()) message = "constraint violation";
         return ResponseEntity.status(GeneralErrorCode.BAD_REQUEST.getStatus())
                 .body(new ApiErrorResponse(GeneralErrorCode.BAD_REQUEST.getCode(), message));
     }

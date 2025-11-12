@@ -6,6 +6,7 @@ import com.hexter31376.umc_mission4.domain.member.enums.Status;
 import com.hexter31376.umc_mission4.domain.order.entity.Order;
 import com.hexter31376.umc_mission4.global.entity.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -21,9 +22,13 @@ public class Member extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
+    @Email
+    @Size(max = 50)
     @Column(nullable = false, unique = true, length = 50)
     private String email;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Status status;

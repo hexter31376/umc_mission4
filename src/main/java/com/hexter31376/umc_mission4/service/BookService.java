@@ -7,9 +7,11 @@ import com.hexter31376.umc_mission4.repository.book.BookRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 @Service
 @Transactional
+@Validated
 public class BookService {
     private final BookRepository bookRepository;
 
@@ -32,4 +34,3 @@ public class BookService {
         return BookResponseDto.builder().id(b.getId()).title(b.getTitle()).author(b.getAuthor()).description(b.getDescription()).build();
     }
 }
-

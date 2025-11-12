@@ -2,7 +2,7 @@ package com.hexter31376.umc_mission4.dto.cart;
 
 import lombok.*;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 
 @Getter
 @Setter
@@ -17,6 +17,6 @@ public class CartAddItemDto {
     private Long bookItemId;
 
     @NotNull
+    @Min(1)
     private Integer quantity;
 }
-

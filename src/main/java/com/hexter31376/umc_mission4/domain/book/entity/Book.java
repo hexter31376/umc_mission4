@@ -2,6 +2,7 @@ package com.hexter31376.umc_mission4.domain.book.entity;
 
 import com.hexter31376.umc_mission4.global.entity.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -17,14 +18,20 @@ public class Book extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
+    @Size(max = 100)
     @Column(nullable = false, length = 100) // 20 → 100 등 현실적 길이
     private String title;
 
     @Builder.Default
+    @NotBlank
+    @Size(max = 100)
     @Column(nullable = false, length = 100)
     private String author = "none";
 
     @Builder.Default
+    @NotBlank
+    @Size(max = 1000)
     @Column(nullable = false, length = 1000)
     private String description = "설명이 없습니다.";
 
