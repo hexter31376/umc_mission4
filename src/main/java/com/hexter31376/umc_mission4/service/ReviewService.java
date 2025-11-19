@@ -28,10 +28,50 @@ public class ReviewService {
     }
 
     public ReviewResponseDto create(ReviewCreateDto dto) {
-        Book b = bookRepository.findById(dto.getBookId()).orElseThrow(() -> new EntityNotFoundException("Book not found"));
-        Member m = memberRepository.findById(dto.getMemberId()).orElseThrow(() -> new EntityNotFoundException("Member not found"));
-        Review r = Review.builder().book(b).member(m).rating(dto.getRating()).content(dto.getContent()).build();
+        Book b = bookRepository.findById(dto.getBookId())
+                .orElseThrow(() -> new EntityNotFoundException("Book not found with id: " + dto.getBookId()));
+        Member m = memberRepository.findById(dto.getMemberId())
+                .orElseThrow(() -> new EntityNotFoundException("Member not found with id: " + dto.getMemberId()));
+
+        Review r = Review.builder()
+                .book(b)
+                .member(m)
+                .rating(dto.getRating())
+                .content(dto.getContent())
+                .build();
+
         Review saved = reviewRepository.save(r);
-        return ReviewResponseDto.builder().id(saved.getId()).bookId(b.getId()).memberId(m.getId()).rating(saved.getRating()).content(saved.getContent()).build();
+        return toResponseDto(saved);
+    }
+
+    public ReviewResponseDto find(Long id) {
+        Review review = reviewRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Review not found with id: " + id));
+        return toResponseDto(review);
+    }
+
+    public ReviewResponseDto update(Long id, Integer rating, String content) {
+        Review review = reviewRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Review not found with id: " + id));
+
+        review.updateRatingAndContent(rating, content);
+        return toResponseDto(review);
+    }
+
+    public void delete(Long id) {
+        if (!reviewRepository.existsById(id)) {
+            throw new EntityNotFoundException("Review not found with id: " + id);
+        }
+        reviewRepository.deleteById(id);
+    }
+
+    private ReviewResponseDto toResponseDto(Review review) {
+        return ReviewResponseDto.builder()
+                .id(review.getId())
+                .bookId(review.getBook().getId())
+                .memberId(review.getMember().getId())
+                .rating(review.getRating())
+                .content(review.getContent())
+                .build();
     }
 }

@@ -1,15 +1,13 @@
 package com.hexter31376.umc_mission4.service;
 
-import com.hexter31376.umc_mission4.domain.cart.entity.CartItem;
 import com.hexter31376.umc_mission4.domain.order.entity.Order;
 import com.hexter31376.umc_mission4.domain.order.entity.OrderItem;
 import com.hexter31376.umc_mission4.domain.book.entity.BookItem;
 import com.hexter31376.umc_mission4.domain.member.entity.Member;
 import com.hexter31376.umc_mission4.dto.order.OrderCreateDto;
+import com.hexter31376.umc_mission4.dto.order.OrderItemDto;
 import com.hexter31376.umc_mission4.dto.order.OrderItemResponseDto;
 import com.hexter31376.umc_mission4.dto.order.OrderResponseDto;
-import com.hexter31376.umc_mission4.repository.cart.CartItemRepository;
-import com.hexter31376.umc_mission4.repository.order.OrderItemRepository;
 import com.hexter31376.umc_mission4.repository.order.OrderRepository;
 import com.hexter31376.umc_mission4.repository.book.BookItemRepository;
 import com.hexter31376.umc_mission4.repository.member.MemberRepository;
@@ -19,78 +17,83 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class OrderService {
     private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
     private final MemberRepository memberRepository;
     private final BookItemRepository bookItemRepository;
-    private final CartItemRepository cartItemRepository;
 
-    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository, MemberRepository memberRepository, BookItemRepository bookItemRepository, CartItemRepository cartItemRepository) {
+    public OrderService(OrderRepository orderRepository, MemberRepository memberRepository, BookItemRepository bookItemRepository) {
         this.orderRepository = orderRepository;
-        this.orderItemRepository = orderItemRepository;
         this.memberRepository = memberRepository;
         this.bookItemRepository = bookItemRepository;
-        this.cartItemRepository = cartItemRepository;
     }
 
-    public OrderResponseDto orderDirect(OrderCreateDto dto) {
-        Member member = memberRepository.findById(dto.getMemberId()).orElseThrow(() -> new EntityNotFoundException("Member not found"));
-        BookItem bookItem = bookItemRepository.findById(dto.getBookItemId()).orElseThrow(() -> new EntityNotFoundException("BookItem not found"));
-        int quantity = dto.getQuantity() == null ? 1 : dto.getQuantity();
+    public OrderResponseDto create(OrderCreateDto dto) {
+        Member member = memberRepository.findById(dto.getMemberId())
+                .orElseThrow(() -> new EntityNotFoundException("Member not found with id: " + dto.getMemberId()));
 
-        Order order = Order.builder().member(member).totalPrice(bookItem.getPrice() * (long) quantity).build();
-        orderRepository.save(order);
+        // Calculate total price and validate book items
+        long totalPrice = 0L;
+        List<BookItem> bookItems = new ArrayList<>();
+        List<Integer> quantities = new ArrayList<>();
 
-        OrderItem oi = OrderItem.builder().order(order).bookItem(bookItem).price(bookItem.getPrice()).quantity(quantity).build();
-        OrderItem savedItem = orderItemRepository.save(oi);
+        for (OrderItemDto itemDto : dto.getOrderItems()) {
+            BookItem bookItem = bookItemRepository.findById(itemDto.getBookItemId())
+                    .orElseThrow(() -> new EntityNotFoundException("BookItem not found with id: " + itemDto.getBookItemId()));
 
-        OrderResponseDto response = OrderResponseDto.builder()
-                .id(order.getId())
-                .memberId(member.getId())
-                .totalPrice(order.getTotalPrice())
-                .items(List.of(OrderItemResponseDto.builder().id(savedItem.getId()).bookItemId(bookItem.getId()).price(savedItem.getPrice()).quantity(savedItem.getQuantity()).build()))
+            long itemTotal = bookItem.getPrice() * itemDto.getQuantity();
+            totalPrice += itemTotal;
+
+            bookItems.add(bookItem);
+            quantities.add(itemDto.getQuantity());
+        }
+
+        // Create order
+        Order order = Order.builder()
+                .member(member)
+                .totalPrice(totalPrice)
                 .build();
-        return response;
+
+        // Add order items
+        for (int i = 0; i < bookItems.size(); i++) {
+            OrderItem item = OrderItem.builder()
+                    .order(order)
+                    .bookItem(bookItems.get(i))
+                    .quantity(quantities.get(i))
+                    .price(bookItems.get(i).getPrice())
+                    .build();
+            order.addOrderItem(item);
+        }
+
+        Order saved = orderRepository.save(order);
+        return toResponseDto(saved);
     }
 
-    public OrderResponseDto orderFromCart(OrderCreateDto dto) {
-        Member member = memberRepository.findById(dto.getMemberId()).orElseThrow(() -> new EntityNotFoundException("Member not found"));
-        List<Long> cartIds = dto.getCartItemIds();
-        if (cartIds == null || cartIds.isEmpty()) throw new IllegalArgumentException("cartItemIds required for cart ordering");
+    public OrderResponseDto find(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + id));
+        return toResponseDto(order);
+    }
 
-        List<CartItem> cartItems = cartItemRepository.findAllById(cartIds);
-        if (cartItems.isEmpty()) throw new IllegalArgumentException("No cart items found");
-
-        long total = 0L;
-        for (CartItem ci : cartItems) {
-            BookItem bi = ci.getBookItem();
-            total += bi.getPrice() * ci.getQuantity();
+    private OrderResponseDto toResponseDto(Order order) {
+        List<OrderItemResponseDto> items = new ArrayList<>();
+        for (OrderItem item : order.getOrderItems()) {
+            items.add(OrderItemResponseDto.builder()
+                    .id(item.getId())
+                    .bookItemId(item.getBookItem().getId())
+                    .price(item.getPrice())
+                    .quantity(item.getQuantity())
+                    .build());
         }
 
-        Order order = Order.builder().member(member).totalPrice(total).build();
-        orderRepository.save(order);
-
-        List<OrderItemResponseDto> createdItems = new ArrayList<>();
-        for (CartItem ci : cartItems) {
-            BookItem bi = ci.getBookItem();
-            OrderItem oi = OrderItem.builder().order(order).bookItem(bi).price(bi.getPrice()).quantity(ci.getQuantity()).build();
-            OrderItem saved = orderItemRepository.save(oi);
-            createdItems.add(OrderItemResponseDto.builder().id(saved.getId()).bookItemId(bi.getId()).price(saved.getPrice()).quantity(saved.getQuantity()).build());
-            // remove cart item
-            cartItemRepository.delete(ci);
-        }
-
-        OrderResponseDto response = OrderResponseDto.builder()
+        return OrderResponseDto.builder()
                 .id(order.getId())
-                .memberId(member.getId())
+                .memberId(order.getMember().getId())
                 .totalPrice(order.getTotalPrice())
-                .items(createdItems)
+                .items(items)
                 .build();
-        return response;
     }
 }

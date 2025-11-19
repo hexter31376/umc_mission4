@@ -44,4 +44,9 @@ public class Member extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
     private List<Review> reviews = new ArrayList<>();
+
+    // Update method
+    public void updateStatus(Status status) {
+        this.status = status;
+    }
 }

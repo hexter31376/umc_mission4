@@ -27,4 +27,9 @@ public class Cart extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<CartItem> cartItems = new ArrayList<>();
+
+    // Helper method to add CartItem
+    public void addCartItem(CartItem cartItem) {
+        this.cartItems.add(cartItem);
+    }
 }

@@ -42,4 +42,9 @@ public class Book extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Review> reviews = new ArrayList<>();
+
+    // Helper method to add BookItem
+    public void addBookItem(BookItem bookItem) {
+        this.bookItems.add(bookItem);
+    }
 }

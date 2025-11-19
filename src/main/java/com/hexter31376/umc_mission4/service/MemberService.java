@@ -30,8 +30,30 @@ public class MemberService {
     }
 
     public MemberDto find(Long id) {
-        Member m = memberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Member not found"));
+        Member m = memberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Member not found with id: " + id));
         return MemberDto.builder().id(m.getId()).email(m.getEmail()).status(m.getStatus()).build();
+    }
+
+    public MemberDto update(Long id, MemberDto dto) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Member not found with id: " + id));
+
+        if (dto.getStatus() != null) {
+            member.updateStatus(dto.getStatus());
+        }
+
+        return MemberDto.builder()
+                .id(member.getId())
+                .email(member.getEmail())
+                .status(member.getStatus())
+                .build();
+    }
+
+    public void delete(Long id) {
+        if (!memberRepository.existsById(id)) {
+            throw new EntityNotFoundException("Member not found with id: " + id);
+        }
+        memberRepository.deleteById(id);
     }
 }
 

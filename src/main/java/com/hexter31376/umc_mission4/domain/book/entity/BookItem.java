@@ -43,4 +43,18 @@ public class BookItem extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "bookItem", fetch = FetchType.LAZY)
     private List<OrderItem> orderItems = new ArrayList<>();
+
+    // Update methods
+    public void updatePrice(Long price) {
+        this.price = price;
+    }
+
+    public void updateQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public void updatePriceAndQuantity(Long price, Integer quantity) {
+        this.price = price;
+        this.quantity = quantity;
+    }
 }

@@ -30,27 +30,54 @@ public class CartService {
     }
 
     public CartItemResponseDto addItem(CartAddItemDto dto) {
-        Member member = memberRepository.findById(dto.getMemberId()).orElseThrow(() -> new EntityNotFoundException("Member not found"));
-        BookItem bookItem = bookItemRepository.findById(dto.getBookItemId()).orElseThrow(() -> new EntityNotFoundException("BookItem not found"));
+        Member member = memberRepository.findById(dto.getMemberId())
+                .orElseThrow(() -> new EntityNotFoundException("Member not found with id: " + dto.getMemberId()));
+        BookItem bookItem = bookItemRepository.findById(dto.getBookItemId())
+                .orElseThrow(() -> new EntityNotFoundException("BookItem not found with id: " + dto.getBookItemId()));
 
-        Cart cart = cartRepository.findById(member.getCart() == null ? -1L : member.getCart().getId()).orElse(null);
+        // Get or create cart
+        Cart cart = cartRepository.findByMemberId(dto.getMemberId()).orElse(null);
         if (cart == null) {
             cart = Cart.builder().member(member).build();
-            cartRepository.save(cart);
+            cart = cartRepository.save(cart);
         }
+
+        long totalPrice = bookItem.getPrice() * dto.getQuantity();
 
         CartItem cartItem = CartItem.builder()
                 .cart(cart)
                 .bookItem(bookItem)
                 .quantity(dto.getQuantity())
-                .totalPrice(bookItem.getPrice() * dto.getQuantity())
+                .totalPrice(totalPrice)
                 .build();
+
+        cart.addCartItem(cartItem);
         CartItem saved = cartItemRepository.save(cartItem);
+
         return CartItemResponseDto.builder()
                 .id(saved.getId())
                 .bookItemId(saved.getBookItem().getId())
                 .quantity(saved.getQuantity())
                 .totalPrice(saved.getTotalPrice())
                 .build();
+    }
+
+    public CartItemResponseDto findCartItem(Long id) {
+        CartItem cartItem = cartItemRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("CartItem not found with id: " + id));
+
+        return CartItemResponseDto.builder()
+                .id(cartItem.getId())
+                .bookItemId(cartItem.getBookItem().getId())
+                .quantity(cartItem.getQuantity())
+                .totalPrice(cartItem.getTotalPrice())
+                .build();
+    }
+
+    public void removeCartItem(Long id) {
+        if (!cartItemRepository.existsById(id)) {
+            throw new EntityNotFoundException("CartItem not found with id: " + id);
+        }
+        cartItemRepository.deleteById(id);
     }
 }

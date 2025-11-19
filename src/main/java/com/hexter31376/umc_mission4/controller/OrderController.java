@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Validated
 @RestController
 @RequestMapping("/api/orders")
-@Tag(name = "주문 API", description = "직접 주문 및 장바구니 기반 주문 관련 API")
+@Tag(name = "주문 API", description = "주문 생성 및 조회 관련 API")
 public class OrderController {
     private final OrderService orderService;
 
@@ -24,19 +24,33 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @Operation(summary = "직접 주문", description = "bookItemId와 quantity를 전송하여 바로 주문합니다.")
-    @PostMapping("/direct")
-    public ResponseEntity<ApiSuccessResponse<OrderResponseDto>> orderDirect(@Valid @RequestBody OrderCreateDto dto) {
-        OrderResponseDto created = orderService.orderDirect(dto);
-        ApiSuccessResponse<OrderResponseDto> payload = new ApiSuccessResponse<>(GeneralSuccessCode.CREATED.getCode(), GeneralSuccessCode.CREATED.getMessage(), created);
+    @Operation(
+        summary = "주문 생성",
+        description = "회원 ID와 주문할 도서 아이템 목록(bookItemId, quantity)을 전송하여 주문을 생성합니다. 여러 개의 도서 아이템을 한 번에 주문할 수 있습니다."
+    )
+    @PostMapping
+    public ResponseEntity<ApiSuccessResponse<OrderResponseDto>> create(@Valid @RequestBody OrderCreateDto dto) {
+        OrderResponseDto created = orderService.create(dto);
+        ApiSuccessResponse<OrderResponseDto> payload = new ApiSuccessResponse<>(
+            GeneralSuccessCode.CREATED.getCode(),
+            GeneralSuccessCode.CREATED.getMessage(),
+            created
+        );
         return ResponseEntity.status(GeneralSuccessCode.CREATED.getStatus()).body(payload);
     }
 
-    @Operation(summary = "장바구니 주문", description = "cartItemIds를 전송하여 장바구니의 항목으로 주문합니다.")
-    @PostMapping("/from-cart")
-    public ResponseEntity<ApiSuccessResponse<OrderResponseDto>> orderFromCart(@Valid @RequestBody OrderCreateDto dto) {
-        OrderResponseDto created = orderService.orderFromCart(dto);
-        ApiSuccessResponse<OrderResponseDto> payload = new ApiSuccessResponse<>(GeneralSuccessCode.CREATED.getCode(), GeneralSuccessCode.CREATED.getMessage(), created);
-        return ResponseEntity.status(GeneralSuccessCode.CREATED.getStatus()).body(payload);
+    @Operation(
+        summary = "주문 조회",
+        description = "주문 ID로 주문 정보를 조회합니다. 주문에 포함된 모든 주문 아이템 정보도 함께 반환됩니다."
+    )
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiSuccessResponse<OrderResponseDto>> get(@PathVariable Long id) {
+        OrderResponseDto dto = orderService.find(id);
+        ApiSuccessResponse<OrderResponseDto> payload = new ApiSuccessResponse<>(
+            GeneralSuccessCode.OK.getCode(),
+            GeneralSuccessCode.OK.getMessage(),
+            dto
+        );
+        return ResponseEntity.ok(payload);
     }
 }

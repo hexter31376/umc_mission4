@@ -20,11 +20,7 @@ public class OpenApiConfig {
                         .title("UMC 미션4 API")
                         .version("v1")
                         .description("이 API는 도서 판매/장바구니/주문/리뷰 관리를 위한 REST API 문서입니다. 모든 설명은 한국어로 제공됩니다.")
-                        .contact(new Contact()
-                                .name("개발자")
-                                .email("dev@example.com"))
-                        .license(new License()
-                                .name("MIT")))
+                )
                 .servers(List.of(
                         new Server()
                                 .url("/")

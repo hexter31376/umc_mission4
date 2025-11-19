@@ -35,5 +35,19 @@ public class Review extends BaseEntity {
     @NotNull
     @JoinColumn(name = "member_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    private Member member; //
+    private Member member;
+
+    // Update methods
+    public void updateRating(Integer rating) {
+        this.rating = rating;
+    }
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
+    public void updateRatingAndContent(Integer rating, String content) {
+        this.rating = rating;
+        this.content = content;
+    }
 }

@@ -2,6 +2,7 @@ package com.hexter31376.umc_mission4.dto.order;
 
 import lombok.*;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import java.util.List;
 
@@ -11,16 +12,10 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class OrderCreateDto {
-    // place order directly for a single book item, or place order from cart
-    @NotNull
+    @NotNull(message = "회원 ID는 필수입니다")
     private Long memberId;
 
-    // optional: if provided, create order from these cartItemIds
-    private List<Long> cartItemIds;
-
-    // optional: direct order of a bookItem
-    private Long bookItemId;
-
-    @Min(1)
-    private Integer quantity;
+    @NotEmpty(message = "최소 1개 이상의 주문 아이템이 필요합니다")
+    @Valid
+    private List<OrderItemDto> orderItems;
 }
