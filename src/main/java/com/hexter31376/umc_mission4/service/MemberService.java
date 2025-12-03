@@ -23,15 +23,27 @@ public class MemberService {
         });
         Member member = Member.builder()
                 .email(dto.getEmail())
+                .password(dto.getPassword() != null ? dto.getPassword() : "defaultPassword") // 기본값 설정
                 .status(dto.getStatus() == null ? Status.ACTIVE : dto.getStatus())
+                .role(dto.getRole() != null ? dto.getRole() : "ROLE_USER")
                 .build();
         Member saved = memberRepository.save(member);
-        return MemberDto.builder().id(saved.getId()).email(saved.getEmail()).status(saved.getStatus()).build();
+        return MemberDto.builder()
+                .id(saved.getId())
+                .email(saved.getEmail())
+                .status(saved.getStatus())
+                .role(saved.getRole())
+                .build();
     }
 
     public MemberDto find(Long id) {
         Member m = memberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Member not found with id: " + id));
-        return MemberDto.builder().id(m.getId()).email(m.getEmail()).status(m.getStatus()).build();
+        return MemberDto.builder()
+                .id(m.getId())
+                .email(m.getEmail())
+                .status(m.getStatus())
+                .role(m.getRole())
+                .build();
     }
 
     public MemberDto update(Long id, MemberDto dto) {
@@ -46,6 +58,7 @@ public class MemberService {
                 .id(member.getId())
                 .email(member.getEmail())
                 .status(member.getStatus())
+                .role(member.getRole())
                 .build();
     }
 

@@ -28,10 +28,20 @@ public class Member extends BaseEntity {
     @Column(nullable = false, unique = true, length = 50)
     private String email;
 
+    @NotBlank
+    @Size(max = 255)
+    @Column(nullable = false)
+    private String password;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Status status;
+
+    @NotNull
+    @Builder.Default
+    @Column(nullable = false, length = 20)
+    private String role = "ROLE_USER"; // ROLE_USER, ROLE_ADMIN
 
     // Cart가 FK(member_id)를 가지는 '소유자'. 여기서는 비소유자(mappedBy)로 둠.
     @OneToOne(mappedBy = "member", fetch = FetchType.LAZY)
@@ -45,8 +55,16 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
     private List<Review> reviews = new ArrayList<>();
 
-    // Update method
+    // Update methods
     public void updateStatus(Status status) {
         this.status = status;
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+
+    public void updateRole(String role) {
+        this.role = role;
     }
 }
